@@ -1,0 +1,12 @@
+<mat-card>
+  <mat-card-title>Register Tenant</mat-card-title>
+  <mat-card-content>
+    <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="name" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput [(ngModel)]="email" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Phone</mat-label><input matInput [(ngModel)]="phone" /></mat-form-field>
+    @if (error()) { <p>{{ error() }}</p> }
+  </mat-card-content>
+  <mat-card-actions align="end">
+    <button mat-flat-button (click)="submit()">Register</button>
+  </mat-card-actions>
+</mat-card>

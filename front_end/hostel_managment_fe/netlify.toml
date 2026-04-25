@@ -1,0 +1,8 @@
+[build]
+  command   = "npm run build -- --configuration production"
+  publish   = "dist/hostel_managment_fe/browser"
+
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200

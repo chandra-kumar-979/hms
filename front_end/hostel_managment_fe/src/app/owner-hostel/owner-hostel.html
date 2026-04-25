@@ -1,0 +1,421 @@
+<div class="page-header">
+  <h1>Hostel Builder</h1>
+  <p>Build your hostel structure step by step — Hostel → Floors → Rooms → Beds</p>
+</div>
+
+<div class="wizard-layout">
+
+  <!-- ─── Left: Stepper ──────────────────────────────────────────────── -->
+  <mat-card style="padding: 1.25rem 1.5rem 1.5rem;">
+
+    @if (loading()) {
+      <div class="load-bar"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+    }
+
+    <mat-stepper #stepper [linear]="false" orientation="horizontal">
+
+      <!-- ══ Step 1: Hostel ═══════════════════════════════════════════ -->
+      <mat-step [completed]="!!chainHostel()">
+        <ng-template matStepLabel>
+          <span class="step-icon step-icon-hostel"><mat-icon>apartment</mat-icon> Hostel</span>
+        </ng-template>
+
+        <div class="step-body">
+
+          @if (chainHostel()) {
+            <div class="step-complete-badge">
+              <mat-icon>check_circle</mat-icon>
+              <strong>{{ chainHostel()!.name }}</strong> is active — create another or pick a different one below
+            </div>
+          }
+
+          <p class="step-hint"><mat-icon>info</mat-icon> Fill in details to create a new hostel.</p>
+
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Hostel Name *</mat-label>
+              <mat-icon matPrefix>apartment</mat-icon>
+              <input matInput [(ngModel)]="name" placeholder="e.g. Sunrise Residency" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Location *</mat-label>
+              <mat-icon matPrefix>location_on</mat-icon>
+              <input matInput [(ngModel)]="location" placeholder="City / Area" />
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline" style="width:100%;">
+            <mat-label>Description</mat-label>
+            <textarea matInput [(ngModel)]="description" rows="2" placeholder="Short description of your hostel"></textarea>
+          </mat-form-field>
+
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Price per Bed (₹)</mat-label>
+              <mat-icon matPrefix>currency_rupee</mat-icon>
+              <input matInput type="number" [(ngModel)]="price" min="0" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Amenities</mat-label>
+              <mat-icon matPrefix>star</mat-icon>
+              <input matInput [(ngModel)]="amenities" placeholder="wifi, food, laundry" />
+              <mat-hint>Comma-separated</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div class="step-actions">
+            <button mat-flat-button
+              [disabled]="addHostelBusy() || !name.trim() || !location.trim() || price < 0"
+              (click)="addHostel()">
+              <mat-icon>add_business</mat-icon>
+              {{ addHostelBusy() ? 'Creating…' : 'Create Hostel & Continue' }}
+            </button>
+          </div>
+
+          @if (hostels().length) {
+            <div class="hostel-picker-label"><span>or select an existing hostel to add floors</span></div>
+            @for (h of hostels(); track h.id) {
+              <div class="hostel-row" [class.selected]="chainHostel()?.id === h.id" (click)="selectHostelForChain(h)">
+                <div class="hr-icon"><mat-icon>apartment</mat-icon></div>
+                <div class="hr-main">
+                  <div class="hr-name">{{ h.name }}</div>
+                  <div class="hr-meta">
+                    <mat-icon style="font-size:.75rem;vertical-align:middle;">location_on</mat-icon>
+                    {{ h.location }} · ₹{{ h.price_per_bed }}/bed
+                  </div>
+                </div>
+                @if (chainHostel()?.id === h.id) { <span class="chip active">Active</span> }
+                @else { <span style="font-size:.75rem;color:#6366f1;font-weight:600;">Select →</span> }
+              </div>
+            }
+          } @else if (!loading()) {
+            <div class="empty-state"><mat-icon>hotel</mat-icon><p>No hostels yet — create your first one above.</p></div>
+          }
+        </div>
+      </mat-step>
+
+      <!-- ══ Step 2: Floor ════════════════════════════════════════════ -->
+      <mat-step [completed]="!!chainFloor()">
+        <ng-template matStepLabel>
+          <span class="step-icon step-icon-floor"><mat-icon>layers</mat-icon> Floors</span>
+        </ng-template>
+
+        <div class="step-body">
+
+          @if (!chainHostel()) {
+            <div class="warn-banner"><mat-icon>warning</mat-icon> Go back and select or create a hostel first.</div>
+          } @else {
+            <div class="ctx-banner hostel">
+              <mat-icon>apartment</mat-icon>
+              Adding floors to <strong>{{ chainHostel()!.name }}</strong>
+            </div>
+          }
+
+          @if (floors().length) {
+            <div class="summary-chips">
+              <span style="font-size:.82rem;color:#64748b;font-weight:600;">Floors added:</span>
+              @for (f of floors(); track f.id) {
+                <span class="chip approved" [class.active]="chainFloor()?.id === f.id">Floor {{ f.floor_number }}</span>
+              }
+            </div>
+          }
+
+          <p class="step-hint"><mat-icon>info</mat-icon>
+            Add one or more floors. Each floor can have multiple rooms.
+          </p>
+
+          <mat-form-field appearance="outline" style="width:200px;">
+            <mat-label>Floor Number *</mat-label>
+            <mat-icon matPrefix>layers</mat-icon>
+            <input matInput type="number" [(ngModel)]="floorNumber" min="0" placeholder="0, 1, 2…" />
+            <mat-hint>Ground = 0, First = 1, etc.</mat-hint>
+          </mat-form-field>
+
+          <div class="step-actions">
+            <button mat-stroked-button (click)="stepper.previous()">
+              <mat-icon>arrow_back</mat-icon> Back
+            </button>
+            <button mat-flat-button
+              [disabled]="addFloorBusy() || !chainHostel() || floorNumber == null || floorNumber < 0"
+              (click)="addFloor()">
+              <mat-icon>add</mat-icon>
+              {{ addFloorBusy() ? 'Adding…' : 'Add Floor' }}
+            </button>
+            <button mat-flat-button style="background:linear-gradient(135deg,#7c3aed,#c084fc)!important;color:#fff!important;"
+              [disabled]="!chainFloor()"
+              (click)="goToRooms()">
+              Next: Add Rooms <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- ══ Step 3: Room ═════════════════════════════════════════════ -->
+      <mat-step [completed]="!!chainRoom()">
+        <ng-template matStepLabel>
+          <span class="step-icon step-icon-room"><mat-icon>meeting_room</mat-icon> Rooms</span>
+        </ng-template>
+
+        <div class="step-body">
+
+          @if (!chainHostel()) {
+            <div class="warn-banner"><mat-icon>warning</mat-icon> Go back to Step 1 first.</div>
+          } @else if (!floors().length) {
+            <div class="warn-banner"><mat-icon>warning</mat-icon> Go back and add at least one floor first.</div>
+          } @else {
+            <div class="ctx-banner floor">
+              <mat-icon>apartment</mat-icon>
+              <strong>{{ chainHostel()!.name }}</strong>
+              @if (chainFloor()) { <span style="opacity:.8"> · Floor {{ chainFloor()!.number }}</span> }
+            </div>
+          }
+
+          @if (floors().length) {
+            <mat-form-field appearance="outline" style="width:100%;margin-bottom:.5rem;">
+              <mat-label>Select Floor to add rooms to *</mat-label>
+              <mat-icon matPrefix>layers</mat-icon>
+              <mat-select [(ngModel)]="selectedFloorId" (ngModelChange)="onFloorSelect($event)">
+                @for (f of floors(); track f.id) {
+                  <mat-option [value]="f.id">Floor {{ f.floor_number }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+
+          @if (rooms().length) {
+            <div class="summary-chips">
+              <span style="font-size:.82rem;color:#64748b;font-weight:600;">Rooms on this floor:</span>
+              @for (r of rooms(); track r.id) {
+                <span class="chip approved">Room {{ r.room_number }} ({{ r.room_type }})</span>
+              }
+            </div>
+          }
+
+          <div class="form-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Room Number *</mat-label>
+              <mat-icon matPrefix>meeting_room</mat-icon>
+              <input matInput type="number" [(ngModel)]="roomNumber" min="1" placeholder="101" />
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Room Type *</mat-label>
+              <mat-icon matPrefix>category</mat-icon>
+              <mat-select [(ngModel)]="roomType">
+                @for (t of roomTypes; track t) {
+                  <mat-option [value]="t">{{ t }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <div class="step-actions">
+            <button mat-stroked-button (click)="stepper.previous()">
+              <mat-icon>arrow_back</mat-icon> Back
+            </button>
+            <button mat-flat-button
+              [disabled]="addRoomBusy() || !selectedFloorId || !roomNumber || roomNumber < 1"
+              (click)="addRoom()">
+              <mat-icon>add</mat-icon>
+              {{ addRoomBusy() ? 'Adding…' : 'Add Room' }}
+            </button>
+            <button mat-flat-button style="background:linear-gradient(135deg,#065f46,#34d399)!important;color:#fff!important;"
+              [disabled]="!chainRoom()"
+              (click)="goToBeds()">
+              Next: Add Beds <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-step>
+
+      <!-- ══ Step 4: Bed ══════════════════════════════════════════════ -->
+      <mat-step [completed]="!!chainBed()">
+        <ng-template matStepLabel>
+          <span class="step-icon step-icon-bed"><mat-icon>hotel</mat-icon> Beds</span>
+        </ng-template>
+
+        <div class="step-body">
+
+          @if (!chainRoom()) {
+            <div class="warn-banner"><mat-icon>warning</mat-icon> Go back and add a room first.</div>
+          } @else {
+            <div class="ctx-banner room">
+              <mat-icon>apartment</mat-icon>
+              <strong>{{ chainHostel()?.name }}</strong> ·
+              Floor {{ chainFloor()?.number }} ·
+              Room {{ chainRoom()!.number }} ({{ chainRoom()!.type }})
+            </div>
+          }
+
+          @if (rooms().length) {
+            <mat-form-field appearance="outline" style="width:100%;margin-bottom:.5rem;">
+              <mat-label>Select Room to add beds to *</mat-label>
+              <mat-icon matPrefix>meeting_room</mat-icon>
+              <mat-select [(ngModel)]="selectedRoomId" (ngModelChange)="onRoomSelect($event)">
+                @for (r of rooms(); track r.id) {
+                  <mat-option [value]="r.id">Room {{ r.room_number }} ({{ r.room_type }})</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
+
+          @if (bedsAdded() > 0) {
+            <div class="bed-success">
+              <mat-icon>check_circle</mat-icon>
+              {{ bedsAdded() }} bed{{ bedsAdded() !== 1 ? 's' : '' }} added to Room {{ chainRoom()?.number }} — keep adding or go back to add more rooms.
+            </div>
+          }
+
+          <mat-form-field appearance="outline" style="width:200px;">
+            <mat-label>Bed Number *</mat-label>
+            <mat-icon matPrefix>hotel</mat-icon>
+            <input matInput type="number" [(ngModel)]="bedNumber" min="1" placeholder="1" />
+          </mat-form-field>
+
+          <div class="step-actions">
+            <button mat-stroked-button (click)="stepper.previous()">
+              <mat-icon>arrow_back</mat-icon> Back to Rooms
+            </button>
+            <button mat-flat-button
+              [disabled]="addBedBusy() || !selectedRoomId || !bedNumber || bedNumber < 1"
+              (click)="addBed()">
+              <mat-icon>hotel</mat-icon>
+              {{ addBedBusy() ? 'Adding…' : 'Add Bed' }}
+            </button>
+          </div>
+
+          @if (chainBed()) {
+            <div style="margin-top:1rem;padding:.75rem 1rem;background:#f0fdf4;border-radius:12px;border:1.5px solid #86efac;font-size:.85rem;color:#15803d;">
+              <strong>All done?</strong> You can add more beds above, go back to add more rooms, or go to Step 1 to create another hostel.
+            </div>
+          }
+        </div>
+      </mat-step>
+
+    </mat-stepper>
+  </mat-card>
+
+  <!-- ─── Right: Chain + Hostel list ─────────────────────────────── -->
+  <div>
+
+    <!-- Hierarchy chain visualiser -->
+    <div class="hierarchy-panel">
+      <div class="panel-label"><mat-icon>account_tree</mat-icon> Current path</div>
+      <div class="chain-wrap">
+        @if (chainHostel()) {
+          <div class="chain-node hostel-node">
+            <mat-icon>apartment</mat-icon>
+            <div>
+              <div class="cn-title">{{ chainHostel()!.name }}</div>
+              <div class="cn-sub">{{ chainHostel()!.location }}</div>
+            </div>
+          </div>
+
+          @if (chainFloor()) {
+            <div class="chain-line"></div><div class="chain-arrow"></div>
+            <div class="chain-node floor-node">
+              <mat-icon>layers</mat-icon>
+              <div>
+                <div class="cn-title">Floor {{ chainFloor()!.number }}</div>
+                <div class="cn-sub">{{ floors().length }} floor(s) total</div>
+              </div>
+            </div>
+
+            @if (chainRoom()) {
+              <div class="chain-line"></div><div class="chain-arrow"></div>
+              <div class="chain-node room-node">
+                <mat-icon>meeting_room</mat-icon>
+                <div>
+                  <div class="cn-title">Room {{ chainRoom()!.number }}</div>
+                  <div class="cn-sub">{{ chainRoom()!.type }} · {{ rooms().length }} room(s)</div>
+                </div>
+              </div>
+
+              @if (chainBed()) {
+                <div class="chain-line"></div><div class="chain-arrow"></div>
+                <div class="chain-node bed-node">
+                  <mat-icon>hotel</mat-icon>
+                  <div>
+                    <div class="cn-title">Bed {{ chainBed()!.number }}</div>
+                    <div class="cn-sub">{{ bedsAdded() }} bed(s) added</div>
+                  </div>
+                </div>
+              }
+            }
+          }
+        } @else {
+          <div class="chain-empty">
+            <mat-icon>account_tree</mat-icon>
+            <p>Create or select a hostel to start building</p>
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- My Hostels list with edit / delete -->
+    <mat-expansion-panel style="border-radius:16px;border:1px solid var(--c-border);">
+      <mat-expansion-panel-header>
+        <mat-panel-title style="font-weight:600;gap:.4rem;display:flex;align-items:center;">
+          <mat-icon style="font-size:1.1rem;">list_alt</mat-icon> My Hostels
+        </mat-panel-title>
+        <mat-panel-description>{{ hostels().length }} total</mat-panel-description>
+      </mat-expansion-panel-header>
+
+      @for (h of hostels(); track h.id) {
+        <div class="hostel-row" style="cursor:default;" [class.selected]="editingId === h.id">
+          <div class="hr-icon"><mat-icon>apartment</mat-icon></div>
+          <div class="hr-main">
+            <div class="hr-name">{{ h.name }}</div>
+            <div class="hr-meta">{{ h.location }} · ₹{{ h.price_per_bed }}/bed</div>
+          </div>
+          <div class="hr-actions">
+            <button mat-icon-button matTooltip="Edit" (click)="startEdit(h)"
+              [disabled]="deleteBusyId() !== null || editBusy()">
+              <mat-icon style="color:#6366f1;">edit</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Delete" (click)="deleteHostel(h.id)"
+              [disabled]="deleteBusyId() !== null || editBusy()">
+              <mat-icon style="color:#ef4444;">
+                {{ deleteBusyId() === h.id ? 'hourglass_empty' : 'delete_outline' }}
+              </mat-icon>
+            </button>
+          </div>
+        </div>
+
+        @if (editingId === h.id) {
+          <div class="edit-card">
+            <div style="font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;">
+              <mat-icon style="color:#6366f1;">edit_note</mat-icon> Edit — {{ h.name }}
+            </div>
+            <div class="form-grid" style="padding:0;">
+              <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="editName" /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Location</mat-label><input matInput [(ngModel)]="editLocation" /></mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" style="width:100%;">
+              <mat-label>Description</mat-label>
+              <input matInput [(ngModel)]="editDescription" />
+            </mat-form-field>
+            <div class="form-grid" style="padding:0;">
+              <mat-form-field appearance="outline"><mat-label>Price/bed</mat-label><input matInput type="number" [(ngModel)]="editPrice" min="0" /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Amenities</mat-label><input matInput [(ngModel)]="editAmenities" placeholder="wifi, food…" /></mat-form-field>
+            </div>
+            <div style="display:flex;gap:.5rem;margin-top:.25rem;">
+              <button mat-flat-button (click)="saveEdit()"
+                [disabled]="editBusy() || !editName.trim() || !editLocation.trim() || editPrice < 0">
+                <mat-icon>save</mat-icon> {{ editBusy() ? 'Saving…' : 'Save Changes' }}
+              </button>
+              <button mat-stroked-button (click)="cancelEdit()"><mat-icon>close</mat-icon> Cancel</button>
+            </div>
+          </div>
+        }
+      }
+
+      @if (!hostels().length && !loading()) {
+        <div class="empty-state" style="padding:.75rem;">
+          <mat-icon>hotel</mat-icon><p>No hostels yet</p>
+        </div>
+      }
+
+    </mat-expansion-panel>
+
+  </div>
+</div>

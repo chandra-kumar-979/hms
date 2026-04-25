@@ -1,0 +1,22 @@
+<mat-card>
+  <mat-card-title>Admin Owner Management</mat-card-title>
+  <mat-card-content>
+    <h3>Create Owner</h3>
+    <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="name" [disabled]="addBusy()" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput [(ngModel)]="email" [disabled]="addBusy()" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Phone</mat-label><input matInput [(ngModel)]="phone" [disabled]="addBusy()" /></mat-form-field>
+    <button mat-flat-button (click)="addOwner()" [disabled]="addBusy() || !name.trim() || !email.trim()">{{ addBusy() ? 'Adding...' : 'Add Owner' }}</button>
+    @if (loading()) { <p>Loading owners...</p> }
+    @if (message()) { <p>{{ message() }}</p> }
+
+    <h3>Owners</h3>
+    <mat-list>
+      @for (o of owners(); track o.id) {
+        <mat-list-item>
+          #{{ o.id }} {{ o.name }} ({{ o.email }})
+          <button mat-button (click)="deleteOwner(o.id)" [disabled]="deleteBusyId() !== null || addBusy()">{{ deleteBusyId() === o.id ? 'Deleting...' : 'Delete' }}</button>
+        </mat-list-item>
+      }
+    </mat-list>
+  </mat-card-content>
+</mat-card>

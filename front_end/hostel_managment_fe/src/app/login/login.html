@@ -1,0 +1,43 @@
+<section class="login-wrap">
+  <mat-card appearance="outlined" class="login-card">
+    <mat-card-header>
+      <mat-card-title>Secure Login</mat-card-title>
+      <mat-card-subtitle>Use Google ID token to continue</mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      <div class="dev-actions">
+        <button mat-stroked-button [disabled]="loading()" (click)="devLogin('TENANT')">Login as Tenant</button>
+        <button mat-stroked-button [disabled]="loading()" (click)="devLogin('OWNER')">Login as Owner</button>
+        <button mat-stroked-button [disabled]="loading()" (click)="devLogin('ADMIN')">Login as Admin</button>
+      </div>
+
+      <mat-divider></mat-divider>
+
+      <mat-form-field appearance="outline" class="token-field">
+        <mat-label>Google ID Token</mat-label>
+        <textarea
+          matInput
+          rows="6"
+          [(ngModel)]="googleToken"
+          placeholder="Paste token here"></textarea>
+      </mat-form-field>
+
+      @if (error()) {
+        <p class="error-line">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ error() }}</span>
+        </p>
+      }
+    </mat-card-content>
+
+    <mat-card-actions align="end">
+      <button mat-flat-button [disabled]="loading()" (click)="login()">
+        @if (loading()) {
+          <mat-spinner diameter="18"></mat-spinner>
+        }
+        <span>{{ loading() ? 'Signing in...' : 'Login' }}</span>
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</section>

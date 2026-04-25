@@ -1,0 +1,112 @@
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 1.5rem;
+  min-height: 60px;
+  background: linear-gradient(90deg, #1e293b 0%, #312e81 50%, #1e1b4b 100%) !important;
+  box-shadow: 0 4px 24px rgba(15, 10, 60, 0.35);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+  padding: 0.5rem 0;
+
+  mat-icon {
+    background: linear-gradient(135deg, #818cf8, #a855f7);
+    border-radius: 8px;
+    padding: 4px;
+    font-size: 1.05rem;
+    width: 1.75rem; height: 1.75rem;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  &:hover { opacity: 0.88; }
+}
+
+.spacer { flex: 1; }
+
+.menu {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 1.25rem;
+}
+
+.menu a {
+  color: rgba(255,255,255,0.78) !important;
+  font-size: 0.88rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0.01em;
+  border-radius: 8px !important;
+  padding: 0 0.85rem !important;
+  transition: color 0.2s, background 0.2s !important;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 4px; left: 50%;
+    width: 0; height: 2px;
+    background: #818cf8;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    transition: width 0.25s ease;
+  }
+
+  &:hover {
+    color: #fff !important;
+    background: rgba(255,255,255,0.1) !important;
+    &::after { width: 60%; }
+  }
+}
+
+.actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-left: 1rem;
+  border-left: 1px solid rgba(255,255,255,0.1);
+  margin-left: 1rem;
+}
+
+.role-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.7rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+  border: none;
+  white-space: nowrap;
+
+  &:hover { transform: translateY(-1px); opacity: 0.9; }
+
+  &.tenant { background: #dbeafe; color: #1e40af; }
+  &.owner  { background: #d1fae5; color: #065f46; }
+  &.admin  { background: #ede9fe; color: #5b21b6; }
+}
+
+@media (max-width: 680px) {
+  .menu { display: none; }
+  .actions .role-pill { display: none; }
+}

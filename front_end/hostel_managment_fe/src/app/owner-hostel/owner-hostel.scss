@@ -1,0 +1,90 @@
+:host { display: block; }
+
+// Stepper step header icons coloring
+.step-icon {
+  display: flex; align-items: center; gap: 0.35rem;
+  font-size: 0.88rem; font-weight: 600;
+  mat-icon { font-size: 1rem; height: 1rem; width: 1rem; }
+}
+.step-icon-hostel { color: #6366f1; }
+.step-icon-floor  { color: #0ea5e9; }
+.step-icon-room   { color: #10b981; }
+.step-icon-bed    { color: #f59e0b; }
+
+// Context banner inside step
+.ctx-banner {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  font-size: 0.82rem; font-weight: 500;
+  margin-bottom: 1rem;
+  animation: fade-in-up 0.3s ease both;
+
+  mat-icon { font-size: 0.95rem; height: 0.95rem; width: 0.95rem; }
+
+  &.hostel { background: #ede9fe; color: #5b21b6; }
+  &.floor  { background: #e0f2fe; color: #0369a1; }
+  &.room   { background: #d1fae5; color: #065f46; }
+}
+
+// Completion badge
+.step-complete-badge {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  background: #d1fae5; color: #065f46;
+  font-size: 0.76rem; font-weight: 700;
+  margin-bottom: 0.75rem;
+  mat-icon { font-size: 0.9rem; height: 0.9rem; width: 0.9rem; }
+}
+
+// Progress bar for loading
+.load-bar { border-radius: 4px; overflow: hidden; margin-bottom: 0.5rem; }
+
+// Hostel picker inside stepper step 1
+.hostel-picker-label {
+  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: #7c8fa5; font-weight: 600; margin: 1rem 0 0.5rem;
+  display: flex; align-items: center; gap: 0.3rem;
+  span { flex: 1; }
+  &::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+}
+
+// Empty state
+.empty-state {
+  text-align: center; padding: 1.5rem;
+  color: #94a3b8;
+  mat-icon { font-size: 3rem; display: block; margin: 0 auto 0.5rem; opacity: 0.35; }
+  p { margin: 0; font-size: 0.88rem; }
+}
+
+// Warning banner (missing prerequisite)
+.warn-banner {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  background: #fef9c3; color: #92400e;
+  font-size: 0.82rem; font-weight: 600;
+  margin-bottom: 1rem;
+  mat-icon { font-size: 0.95rem; height: 0.95rem; width: 0.95rem; color: #b45309; }
+}
+
+// Summary row of already-added floors/rooms
+.summary-chips {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem;
+  margin-bottom: 0.85rem;
+  .chip { font-size: .75rem; }
+}
+
+// Add more bed prompt after first bed
+.bed-success {
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0fdf4, #dcfce7);
+  border: 1px solid #bbf7d0;
+  margin-top: 0.75rem;
+  animation: fade-in-up 0.35s ease both;
+  font-size: 0.88rem; color: #166534;
+  mat-icon { color: #22c55e; }
+}

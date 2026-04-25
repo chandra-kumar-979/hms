@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: hostel-ms-api
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ENV
+        value: production
+      - key: DATABASE_URL
+        value: sqlite:////data/hostel.db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DEV_AUTH_ENABLED
+        value: "true"
+      - key: CORS_ORIGINS
+        value: https://hostel-ms.vercel.app,http://localhost:4200
+      - key: APP_BASE_URL
+        value: https://hostel-ms.vercel.app
+    disk:
+      name: hostel-db
+      mountPath: /data
+      sizeGB: 1

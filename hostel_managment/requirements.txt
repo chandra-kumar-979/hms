@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+sqlalchemy
+alembic
+python-dotenv
+pydantic
+python-multipart
+PyJWT
+boto3
+google-auth
+google-auth-oauthlib
+pytest
+fpdf2

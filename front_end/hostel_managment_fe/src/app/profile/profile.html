@@ -1,0 +1,10 @@
+<mat-card>
+  <mat-card-title>Edit Profile</mat-card-title>
+  <mat-card-content>
+    <mat-form-field appearance="outline"><mat-label>Name</mat-label><input matInput [(ngModel)]="name" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Phone</mat-label><input matInput [(ngModel)]="phone" /></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Profile Image URL</mat-label><input matInput [(ngModel)]="profile_image" /></mat-form-field>
+    @if (message()) { <p>{{ message() }}</p> }
+  </mat-card-content>
+  <mat-card-actions align="end"><button mat-flat-button (click)="save()">Save</button></mat-card-actions>
+</mat-card>

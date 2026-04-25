@@ -1,0 +1,45 @@
+<mat-toolbar class="topbar">
+  <a class="brand" routerLink="/">
+    <mat-icon>apartment</mat-icon>
+    <span>HostelMS</span>
+  </a>
+
+  <div class="menu">
+    <a mat-button routerLink="/">
+      <mat-icon>home</mat-icon> Explore
+    </a>
+    @if (userRole() === 'TENANT') {
+      <a mat-button routerLink="/tenant/dashboard">Dashboard</a>
+      <a mat-button routerLink="/tenant/book-room">Book Room</a>
+    }
+    @if (userRole() === 'OWNER') {
+      <a mat-button routerLink="/owner/dashboard">Overview</a>
+      <a mat-button routerLink="/owner/hostels">Hostel Builder</a>
+    }
+    @if (userRole() === 'ADMIN') {
+      <a mat-button routerLink="/admin/dashboard">Admin</a>
+      <a mat-button routerLink="/admin/owners">Manage Owners</a>
+    }
+  </div>
+
+  <span class="spacer"></span>
+
+  <div class="actions">
+    @if (!isLoggedIn()) {
+      <button class="role-pill tenant" (click)="quickDevLogin('TENANT')" title="Dev login as Tenant">Tenant</button>
+      <button class="role-pill owner"  (click)="quickDevLogin('OWNER')"  title="Dev login as Owner">Owner</button>
+      <button class="role-pill admin"  (click)="quickDevLogin('ADMIN')"  title="Dev login as Admin">Admin</button>
+      <a mat-button style="color:rgba(255,255,255,.8)!important;" routerLink="/auth/register">Register</a>
+      <a mat-flat-button style="background:linear-gradient(135deg,#6366f1,#a855f7)!important;color:#fff!important;border-radius:10px!important;" routerLink="/auth/login">Login</a>
+    }
+    @if (isLoggedIn()) {
+      <a mat-button style="color:rgba(255,255,255,.85)!important;" routerLink="/profile">
+        <mat-icon>account_circle</mat-icon>
+        {{ userName() || 'Profile' }}
+      </a>
+      <button mat-stroked-button style="color:rgba(255,255,255,.8)!important;border-color:rgba(255,255,255,.25)!important;border-radius:10px!important;" (click)="logout()">
+        <mat-icon>logout</mat-icon> Logout
+      </button>
+    }
+  </div>
+</mat-toolbar>

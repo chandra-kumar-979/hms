@@ -1,0 +1,131 @@
+<section class="page-header">
+  <h1>Find Your Perfect Stay</h1>
+  <p>Verified hostels with modern amenities — filter by location, price, and rating.</p>
+</section>
+
+<!-- Filters -->
+<mat-card style="padding:1.25rem;margin-bottom:1.5rem;border-radius:16px!important;">
+  <div class="filters-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Location</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [(ngModel)]="location" placeholder="City or area" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Min Price (₹)</mat-label>
+      <mat-icon matPrefix>currency_rupee</mat-icon>
+      <input matInput type="number" [(ngModel)]="minPrice" min="0" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Max Price (₹)</mat-label>
+      <mat-icon matPrefix>currency_rupee</mat-icon>
+      <input matInput type="number" [(ngModel)]="maxPrice" min="0" />
+    </mat-form-field>
+    <mat-form-field appearance="outline">
+      <mat-label>Min Rating</mat-label>
+      <mat-icon matPrefix>star</mat-icon>
+      <mat-select [(ngModel)]="minRating">
+        <mat-option [value]="undefined">Any</mat-option>
+        @for (n of [1,2,3,4,5]; track n) {
+          <mat-option [value]="n">{{ '★'.repeat(n) }} {{ n }}+</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    <button mat-flat-button style="height:56px;margin-top:0;" (click)="loadHostels()">
+      <mat-icon>tune</mat-icon> Apply Filters
+    </button>
+  </div>
+</mat-card>
+
+<!-- Loading -->
+@if (loading()) {
+  <div class="state-center">
+    <mat-spinner diameter="44"></mat-spinner>
+    <p>Finding hostels for you…</p>
+  </div>
+}
+
+<!-- Error -->
+@if (!loading() && error()) {
+  <div class="state-center error">
+    <mat-icon>wifi_off</mat-icon>
+    <p>{{ error() }}</p>
+    <button mat-flat-button (click)="loadHostels()">Try Again</button>
+  </div>
+}
+
+<!-- Grid -->
+@if (!loading() && !error()) {
+  @if (!hostels().length) {
+    <div class="state-center">
+      <mat-icon>search_off</mat-icon>
+      <p>No hostels match your filters.</p>
+      <button mat-stroked-button (click)="resetFilters()">Clear Filters</button>
+    </div>
+  }
+  <section class="hostel-grid">
+    @for (h of hostels(); track h.id; let i = $index) {
+      <div class="hcard" [style.animation-delay]="(i * 0.06) + 's'">
+        <!-- Image area -->
+        <div class="hcard-img-wrap">
+          <img class="hcard-img"
+            [src]="h.images?.[0] || 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=600&q=80'"
+            [alt]="h.name" loading="lazy" />
+          <div class="hcard-overlay"></div>
+          @if (h.price_per_bed != null) {
+            <div class="price-badge">₹{{ h.price_per_bed }}<span>/bed</span></div>
+          }
+          @if (h.rating != null) {
+            <div class="rating-badge">
+              <mat-icon>star</mat-icon> {{ h.rating }}
+            </div>
+          }
+        </div>
+        <!-- Card body -->
+        <div class="hcard-body">
+          <h3 class="hcard-name">{{ h.name }}</h3>
+          <div class="hcard-location">
+            <mat-icon>location_on</mat-icon>
+            <span>{{ h.location }}</span>
+          </div>
+          <!-- Star row -->
+          @if (h.rating) {
+            <div class="stars-row">
+              @for (s of starsArr(h.rating); track $index) {
+                <mat-icon class="star filled">star</mat-icon>
+              }
+              @for (s of emptyStarsArr(h.rating); track $index) {
+                <mat-icon class="star empty">star_border</mat-icon>
+              }
+            </div>
+          }
+          <!-- Amenity chips -->
+          @if (h.amenities && h.amenities.length) {
+            <div class="amenity-chips">
+              @for (a of h.amenities.slice(0,4); track a) {
+                <span class="amenity-chip">{{ a }}</span>
+              }
+              @if (h.amenities.length > 4) {
+                <span class="amenity-chip more">+{{ h.amenities.length - 4 }}</span>
+              }
+            </div>
+          }
+        </div>
+        <!-- Card footer -->
+        <div class="hcard-footer">
+          <a mat-flat-button class="view-btn"
+            [routerLink]="['/tenant/book-room']"
+            [queryParams]="{
+              hostelId: h.id,
+              hostelName: h.name,
+              location: h.location,
+              price: h.price_per_bed,
+              amenities: h.amenities?.join(',')
+            }">
+            <mat-icon>hotel</mat-icon> Book Room
+          </a>
+        </div>
+      </div>
+    }
+  </section>
+}

@@ -1,0 +1,208 @@
+<div class="page-header">
+  <h1>Book a Room</h1>
+  <p>Select dates and an available bed to submit your booking request.</p>
+</div>
+
+<div class="booking-layout">
+
+  <!-- ── Main booking form ──────────────────────────────────────────── -->
+  <div class="booking-main">
+
+    <!-- Hostel context banner (shown when arriving from a card) -->
+    @if (hostelId()) {
+      <div class="hostel-banner">
+        <div class="hb-icon"><mat-icon>apartment</mat-icon></div>
+        <div class="hb-body">
+          <div class="hb-name">{{ hostelName() || 'Selected Hostel' }}</div>
+          <div class="hb-meta">
+            @if (hostelLoc()) {
+              <span><mat-icon>location_on</mat-icon>{{ hostelLoc() }}</span>
+            }
+            @if (hostelPrice()) {
+              <span><mat-icon>currency_rupee</mat-icon>{{ hostelPrice() }}/bed</span>
+            }
+          </div>
+          @if (hostelAmenities().length) {
+            <div class="hb-chips">
+              @for (a of hostelAmenities().slice(0,5); track a) {
+                <span class="amenity-chip">{{ a }}</span>
+              }
+            </div>
+          }
+        </div>
+        <button mat-icon-button class="hb-change" (click)="backToHostels()" matTooltip="Choose a different hostel">
+          <mat-icon>swap_horiz</mat-icon>
+        </button>
+      </div>
+    }
+
+    <!-- Hostel dropdown — shown when arriving directly (no pre-selected hostel) -->
+    @if (!fromCard()) {
+      <mat-card style="padding:1.25rem;margin-bottom:1rem;border-radius:16px!important;">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem;font-weight:700;">
+          <mat-icon style="color:#6366f1;">apartment</mat-icon> Choose a Hostel
+        </div>
+        <mat-form-field appearance="outline">
+          <mat-label>Select Hostel</mat-label>
+          <mat-select [(ngModel)]="hostelIdModel" (ngModelChange)="hostelId.set($event); onHostelDropdownChange()">
+            @for (h of allHostels(); track h.id) {
+              <mat-option [value]="h.id">
+                {{ h.name }} — {{ h.location }}
+                @if (h.price_per_bed) { (₹{{ h.price_per_bed }}/bed) }
+              </mat-option>
+            }
+          </mat-select>
+          <mat-hint>Browse hostels on the home page for more details</mat-hint>
+        </mat-form-field>
+        <div style="margin-top:.5rem;">
+          <a mat-stroked-button routerLink="/">
+            <mat-icon>search</mat-icon> Browse Hostels
+          </a>
+        </div>
+      </mat-card>
+    }
+
+    <!-- Bed + Date form -->
+    <mat-card style="padding:1.5rem;border-radius:16px!important;">
+
+      @if (loading()) {
+        <div style="text-align:center;padding:1.5rem 0;">
+          <mat-spinner diameter="40"></mat-spinner>
+          <p style="margin:.75rem 0 0;color:#607089;font-size:.9rem;">Loading available beds…</p>
+        </div>
+      }
+
+      @if (!loading() && hostelId() && !beds().length) {
+        <div style="text-align:center;padding:1.5rem 0;color:#94a3b8;">
+          <mat-icon style="font-size:3rem;display:block;margin:0 auto .5rem;opacity:.3;">hotel</mat-icon>
+          <p style="margin:0;">No available beds right now.<br>Try a different hostel or check back later.</p>
+          <button mat-stroked-button style="margin-top:.75rem;" (click)="backToHostels()">
+            <mat-icon>arrow_back</mat-icon> Back to Hostels
+          </button>
+        </div>
+      }
+
+      @if (!loading() && beds().length) {
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;font-weight:700;">
+          <mat-icon style="color:#10b981;">hotel</mat-icon>
+          {{ beds().length }} available bed{{ beds().length !== 1 ? 's' : '' }}
+        </div>
+
+        <!-- Bed picker grid -->
+        <div class="bed-grid">
+          @for (b of beds(); track b.id) {
+            <div class="bed-tile" [class.selected]="selectedBed === b.id" (click)="selectedBed = b.id">
+              <mat-icon class="bed-icon">hotel</mat-icon>
+              <div class="bed-label">Bed {{ b.bed_number }}</div>
+              <div class="bed-meta">Room {{ b.room_id }}</div>
+              @if (selectedBed === b.id) {
+                <mat-icon class="bed-check">check_circle</mat-icon>
+              }
+            </div>
+          }
+        </div>
+
+        <mat-divider style="margin:1.25rem 0;"></mat-divider>
+
+        <!-- Dates -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+          <mat-form-field appearance="outline">
+            <mat-label>Check-in Date</mat-label>
+            <mat-icon matPrefix>event</mat-icon>
+            <input matInput type="date" [(ngModel)]="startDate"
+              [min]="today"
+              [max]="endDate || ''"
+              (ngModelChange)="onStartDateChange()"
+              [disabled]="bookingBusy()" />
+            <mat-hint>Cannot be in the past</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Check-out Date</mat-label>
+            <mat-icon matPrefix>event_available</mat-icon>
+            <input matInput type="date" [(ngModel)]="endDate"
+              [min]="minEndDate"
+              [disabled]="bookingBusy() || !startDate" />
+            <mat-hint>{{ startDate ? 'Must be on or after check-in' : 'Pick check-in first' }}</mat-hint>
+          </mat-form-field>
+        </div>
+
+        @if (dateError) {
+          <p style="color:#b91c1c;font-size:.85rem;margin:.3rem 0 .75rem;display:flex;align-items:center;gap:.3rem;background:#fee2e2;padding:.4rem .75rem;border-radius:8px;">
+            <mat-icon style="font-size:1rem;flex-shrink:0;">warning</mat-icon> {{ dateError }}
+          </p>
+        }
+
+        <!-- Submit -->
+        <button mat-flat-button style="width:100%;height:48px;font-size:1rem;font-weight:700;margin-top:.25rem;border-radius:12px!important;background:linear-gradient(135deg,#3b5bdb,#6c8cff)!important;color:#fff!important;"
+          [disabled]="bookingBusy() || !selectedBed || !startDate || !endDate || !!dateError"
+          (click)="requestBooking()">
+          @if (bookingBusy()) {
+            <mat-spinner diameter="20" style="display:inline-block;vertical-align:middle;margin-right:.5rem;"></mat-spinner>
+            Submitting…
+          } @else {
+            <ng-container><mat-icon>send</mat-icon> Submit Booking Request</ng-container>
+          }
+        </button>
+      }
+
+      <!-- Success state -->
+      @if (success()) {
+        <div class="success-banner">
+          <mat-icon>check_circle</mat-icon>
+          <div>
+            <div style="font-weight:700;font-size:1rem;">Booking request submitted!</div>
+            <div style="font-size:.85rem;opacity:.85;">The owner will review and approve it. Check your dashboard for updates.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:.75rem;margin-top:.75rem;">
+          <a mat-flat-button routerLink="/tenant/dashboard">
+            <mat-icon>dashboard</mat-icon> My Dashboard
+          </a>
+          <button mat-stroked-button (click)="backToHostels()">
+            <mat-icon>search</mat-icon> Browse More
+          </button>
+        </div>
+      }
+
+    </mat-card>
+  </div>
+
+  <!-- ── Sidebar tip ─────────────────────────────────────────────────── -->
+  <div class="booking-side">
+    <div class="tip-card">
+      <div class="tip-title"><mat-icon>info</mat-icon> How it works</div>
+      <ol class="tip-steps">
+        <li>
+          <span class="tip-num">1</span>
+          <span>Pick an available bed from the grid</span>
+        </li>
+        <li>
+          <span class="tip-num">2</span>
+          <span>Choose your check-in &amp; check-out dates</span>
+        </li>
+        <li>
+          <span class="tip-num">3</span>
+          <span>Submit — the owner reviews and approves</span>
+        </li>
+        <li>
+          <span class="tip-num">4</span>
+          <span>You'll get a notification once confirmed</span>
+        </li>
+      </ol>
+    </div>
+
+    @if (!fromCard()) {
+      <div class="tip-card" style="margin-top:1rem;">
+        <div class="tip-title"><mat-icon>lightbulb</mat-icon> Tip</div>
+        <p style="margin:0;font-size:.85rem;color:var(--c-text-soft);">
+          Browse hostels on the home page and click
+          <strong>"Book Room"</strong> on any card to skip straight to this step with the hostel pre-selected.
+        </p>
+        <a mat-stroked-button routerLink="/" style="margin-top:.75rem;display:inline-flex;">
+          <mat-icon>apartment</mat-icon> Browse Hostels
+        </a>
+      </div>
+    }
+  </div>
+
+</div>
