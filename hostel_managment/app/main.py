@@ -32,6 +32,47 @@ from app.model.password_reset import PasswordResetToken
 
 Base.metadata.create_all(bind=engine)
 
+# Auto-migrate: add columns that may be missing from existing tables
+def run_migrations():
+    from sqlalchemy import text, inspect
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        db_url = str(engine.url)
+        is_postgres = db_url.startswith("postgresql")
+
+        # Add password_hash to users if missing
+        user_cols = [c["name"] for c in inspector.get_columns("users")]
+        if "password_hash" not in user_cols:
+            conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR"))
+            conn.commit()
+
+        # Add payment columns if missing
+        payment_cols = [c["name"] for c in inspector.get_columns("payments")]
+        for col, col_type in [
+            ("payment_method", "VARCHAR"),
+            ("transaction_ref", "VARCHAR"),
+            ("tenant_notes", "VARCHAR"),
+            ("approved_by_id", "INTEGER"),
+            ("approved_at", "TIMESTAMP WITH TIME ZONE" if is_postgres else "DATETIME"),
+            ("owner_remarks", "VARCHAR"),
+            ("month_year", "VARCHAR"),
+        ]:
+            if col not in payment_cols:
+                conn.execute(text(f"ALTER TABLE payments ADD COLUMN {col} {col_type}"))
+                conn.commit()
+
+        # Add payment_day to hostels if missing
+        hostel_cols = [c["name"] for c in inspector.get_columns("hostels")]
+        if "payment_day" not in hostel_cols:
+            conn.execute(text("ALTER TABLE hostels ADD COLUMN payment_day INTEGER DEFAULT 0"))
+            conn.commit()
+
+try:
+    run_migrations()
+except Exception as e:
+    import logging
+    logging.getLogger(__name__).warning("Migration warning (non-fatal): %s", e)
+
 app = FastAPI(title="Hostel Management System API", version="1.0.0")
 
 app.add_middleware(
