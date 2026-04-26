@@ -24,5 +24,9 @@ class Settings:
     PAYMENT_SECRET_KEY: str | None = os.getenv("PAYMENT_SECRET_KEY")
     NOTIFICATION_PROVIDER: str = os.getenv("NOTIFICATION_PROVIDER", "mock")
     APP_BASE_URL: str = os.getenv("APP_BASE_URL", "http://localhost:4200")
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: str = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
 
 settings = Settings()

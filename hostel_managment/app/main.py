@@ -28,6 +28,7 @@ from app.model.feedback import Feedback
 from app.model.notification import Notification
 from app.model.broadcast import BroadcastMessage
 from app.model.vacate import VacateRequest
+from app.model.password_reset import PasswordResetToken
 
 Base.metadata.create_all(bind=engine)
 

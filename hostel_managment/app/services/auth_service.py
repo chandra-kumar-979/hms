@@ -118,6 +118,70 @@ def login_user_service(email: str, password: str, db: Session):
     return {"id": user.id, "name": user.name, "email": user.email, "role": user.role.value, "token": token}
 
 
+def forgot_password_service(email: str, db: Session):
+    from app.model.password_reset import PasswordResetToken
+    from app.utils.email_sender import send_password_reset_email
+    from datetime import datetime, timedelta, timezone
+    import secrets
+
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        # Don't reveal whether email exists
+        return {"message": "If that email is registered, a reset link has been sent."}
+
+    # Invalidate any existing unused tokens
+    db.query(PasswordResetToken).filter(
+        PasswordResetToken.user_id == user.id,
+        PasswordResetToken.used == False
+    ).update({"used": True})
+    db.commit()
+
+    token = secrets.token_urlsafe(32)
+    expires = datetime.now(timezone.utc) + timedelta(minutes=30)
+    reset_token = PasswordResetToken(user_id=user.id, token=token, expires_at=expires)
+    db.add(reset_token)
+    db.commit()
+
+    reset_url = f"{settings.APP_BASE_URL}/auth/reset-password?token={token}"
+    sent = send_password_reset_email(user.email, reset_url)
+
+    if not sent:
+        # SMTP not configured — return the URL in dev mode so it can be tested
+        if settings.DEV_AUTH_ENABLED:
+            return {"message": "Reset link (dev mode — no SMTP configured)", "reset_url": reset_url}
+
+    return {"message": "If that email is registered, a reset link has been sent."}
+
+
+def reset_password_service(token: str, new_password: str, db: Session):
+    from app.model.password_reset import PasswordResetToken
+    from datetime import datetime, timezone
+
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+
+    reset_token = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.used == False
+    ).first()
+
+    if not reset_token:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset link")
+
+    if reset_token.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Reset link has expired. Please request a new one.")
+
+    user = db.query(User).filter(User.id == reset_token.user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user.password_hash = hash_password(new_password)
+    reset_token.used = True
+    db.commit()
+
+    return {"message": "Password updated successfully. You can now log in."}
+
+
 def update_profile_service(user: User, name: str | None, phone: str | None, profile_image: str | None, db: Session):
     if name is not None:
         user.name = name

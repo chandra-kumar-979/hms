@@ -8,6 +8,8 @@ export const routes: Routes = [
   { path: 'hostels/:id', loadComponent: () => import('./hostel-detail/hostel-detail').then(m => m.HostelDetailComponent) },
   { path: 'auth/login', loadComponent: () => import('./login/login').then(m => m.LoginComponent) },
   { path: 'auth/register', loadComponent: () => import('./register/register').then(m => m.RegisterComponent) },
+  { path: 'auth/forgot-password', loadComponent: () => import('./forgot-password/forgot-password').then(m => m.ForgotPasswordComponent) },
+  { path: 'auth/reset-password', loadComponent: () => import('./reset-password/reset-password').then(m => m.ResetPasswordComponent) },
   { path: 'profile', loadComponent: () => import('./profile/profile').then(m => m.ProfileComponent) },
   { path: 'tenant/dashboard', loadComponent: () => import('./dashboard/tenant-dashboard').then(m => m.TenantDashboardComponent), canMatch: [roleGuard(['TENANT'])] },
   { path: 'tenant/book-room', loadComponent: () => import('./tenant-booking/tenant-booking').then(m => m.TenantBookingComponent), canMatch: [roleGuard(['TENANT'])] },

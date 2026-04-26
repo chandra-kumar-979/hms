@@ -29,7 +29,8 @@
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <a mat-button routerLink="/auth/register">New here? Register</a>
+      <a mat-button routerLink="/auth/forgot-password">Forgot password?</a>
+      <a mat-button routerLink="/auth/register">Register</a>
       <button mat-flat-button color="primary" [disabled]="loading() || !email || !password" (click)="login()">
         @if (loading()) { <mat-spinner diameter="18"></mat-spinner> }
         <span>{{ loading() ? 'Signing in...' : 'Login' }}</span>
