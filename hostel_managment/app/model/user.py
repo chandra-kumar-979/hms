@@ -14,7 +14,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String)
     email = Column(String, unique=True, index=True)
-    role = Column(Enum(UserRole))
+    role = Column(Enum(UserRole, native_enum=False))
     google_id = Column(String)
     phone = Column(String)
     profile_image = Column(String)

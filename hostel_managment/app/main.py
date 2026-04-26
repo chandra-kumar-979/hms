@@ -46,6 +46,16 @@ def run_migrations():
             conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR"))
             conn.commit()
 
+        # Fix role column: convert native PG enum to VARCHAR if needed (PostgreSQL only)
+        if is_postgres:
+            try:
+                conn.execute(text(
+                    "ALTER TABLE users ALTER COLUMN role TYPE VARCHAR USING role::VARCHAR"
+                ))
+                conn.commit()
+            except Exception:
+                conn.rollback()
+
         # Add payment columns if missing
         payment_cols = [c["name"] for c in inspector.get_columns("payments")]
         for col, col_type in [
