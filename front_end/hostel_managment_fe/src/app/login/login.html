@@ -1,26 +1,24 @@
 <section class="login-wrap">
   <mat-card appearance="outlined" class="login-card">
     <mat-card-header>
-      <mat-card-title>Secure Login</mat-card-title>
-      <mat-card-subtitle>Use Google ID token to continue</mat-card-subtitle>
+      <mat-card-title>Welcome Back</mat-card-title>
+      <mat-card-subtitle>Sign in to Hostel Management System</mat-card-subtitle>
     </mat-card-header>
 
     <mat-card-content>
-      <div class="dev-actions">
-        <button mat-stroked-button [disabled]="loading()" (click)="devLogin('TENANT')">Login as Tenant</button>
-        <button mat-stroked-button [disabled]="loading()" (click)="devLogin('OWNER')">Login as Owner</button>
-        <button mat-stroked-button [disabled]="loading()" (click)="devLogin('ADMIN')">Login as Admin</button>
-      </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput [(ngModel)]="email" type="email" placeholder="you@example.com" />
+        <mat-icon matSuffix>email</mat-icon>
+      </mat-form-field>
 
-      <mat-divider></mat-divider>
-
-      <mat-form-field appearance="outline" class="token-field">
-        <mat-label>Google ID Token</mat-label>
-        <textarea
-          matInput
-          rows="6"
-          [(ngModel)]="googleToken"
-          placeholder="Paste token here"></textarea>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Login as</mat-label>
+        <mat-select [(ngModel)]="role">
+          <mat-option value="TENANT">Tenant</mat-option>
+          <mat-option value="OWNER">Owner</mat-option>
+          <mat-option value="ADMIN">Admin</mat-option>
+        </mat-select>
       </mat-form-field>
 
       @if (error()) {
@@ -32,10 +30,9 @@
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <button mat-flat-button [disabled]="loading()" (click)="login()">
-        @if (loading()) {
-          <mat-spinner diameter="18"></mat-spinner>
-        }
+      <a mat-button routerLink="/register">New user? Register</a>
+      <button mat-flat-button color="primary" [disabled]="loading() || !email" (click)="login()">
+        @if (loading()) { <mat-spinner diameter="18"></mat-spinner> }
         <span>{{ loading() ? 'Signing in...' : 'Login' }}</span>
       </button>
     </mat-card-actions>

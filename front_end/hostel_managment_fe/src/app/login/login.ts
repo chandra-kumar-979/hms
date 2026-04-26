@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { AuthService } from '../auth';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,25 +9,22 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-login',
   standalone: true,
   imports: [
-    FormsModule,
-    MatCardModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatDividerModule
+    FormsModule, RouterLink,
+    MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule,
+    MatIconModule, MatProgressSpinnerModule, MatDividerModule, MatSelectModule
   ],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
-  googleToken = '';
+  email = '';
+  role: 'TENANT' | 'OWNER' | 'ADMIN' = 'TENANT';
   error = signal<string | null>(null);
   loading = signal(false);
 
@@ -35,44 +32,14 @@ export class LoginComponent {
 
   login() {
     this.error.set(null);
-    if (!this.googleToken.trim()) {
-      this.error.set('Please paste a Google ID token.');
+    if (!this.email.trim()) {
+      this.error.set('Please enter your email.');
       return;
     }
-
     this.loading.set(true);
-    this.auth.googleLogin(this.googleToken.trim()).subscribe({
-      next: () => {
-        this.loading.set(false);
-        this.router.navigate(['/']);
-      },
-      error: (err) => {
-        this.loading.set(false);
-        this.error.set(err?.error?.detail ?? 'Login failed');
-      }
+    this.auth.devLogin({ email: this.email.trim(), role: this.role }).subscribe({
+      next: () => { this.loading.set(false); this.router.navigate(['/']); },
+      error: (err) => { this.loading.set(false); this.error.set(err?.error?.detail ?? 'Login failed'); }
     });
-  }
-
-  devLogin(role: 'TENANT' | 'OWNER' | 'ADMIN') {
-    this.error.set(null);
-    this.loading.set(true);
-
-    const key = role.toLowerCase();
-    this.auth
-      .devLogin({
-        email: `${key}.demo@hostelms.local`,
-        name: `Demo ${role}`,
-        role
-      })
-      .subscribe({
-        next: () => {
-          this.loading.set(false);
-          this.router.navigate(['/']);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.error.set(err?.error?.detail ?? 'Dev login failed');
-        }
-      });
   }
 }
