@@ -79,3 +79,45 @@ def add_bed(payload: BedCreateRequest, db: Session = Depends(get_db), user=Depen
 def get_floors_for_hostel(hostel_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
     from app.model.floor import Floor
     return db.query(Floor).filter(Floor.hostel_id == hostel_id).all()
+
+
+@router.delete("/floors/{floor_id}")
+def delete_floor(floor_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    from app.model.floor import Floor
+    from app.model.user import UserRole
+    floor = db.query(Floor).filter(Floor.id == floor_id).first()
+    if not floor:
+        raise HTTPException(status_code=404, detail="Floor not found")
+    if user.role not in (UserRole.ADMIN, UserRole.OWNER):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    db.delete(floor)
+    db.commit()
+    return {"message": "Floor deleted"}
+
+
+@router.delete("/rooms/{room_id}")
+def delete_room(room_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    from app.model.room import Room
+    from app.model.user import UserRole
+    room = db.query(Room).filter(Room.id == room_id).first()
+    if not room:
+        raise HTTPException(status_code=404, detail="Room not found")
+    if user.role not in (UserRole.ADMIN, UserRole.OWNER):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    db.delete(room)
+    db.commit()
+    return {"message": "Room deleted"}
+
+
+@router.delete("/beds/{bed_id}")
+def delete_bed(bed_id: int, db: Session = Depends(get_db), user=Depends(get_current_user)):
+    from app.model.bed import Bed
+    from app.model.user import UserRole
+    bed = db.query(Bed).filter(Bed.id == bed_id).first()
+    if not bed:
+        raise HTTPException(status_code=404, detail="Bed not found")
+    if user.role not in (UserRole.ADMIN, UserRole.OWNER):
+        raise HTTPException(status_code=403, detail="Unauthorized")
+    db.delete(bed)
+    db.commit()
+    return {"message": "Bed deleted"}

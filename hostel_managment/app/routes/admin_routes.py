@@ -29,7 +29,7 @@ def update_owner_status(payload: OwnerStatusUpdateRequest, db: Session = Depends
 @router.post("/owners")
 def add_owner(payload: OwnerCreateRequest, db: Session = Depends(get_db), user=Depends(get_current_user)):
     _ensure_admin(user)
-    return create_owner(payload.name, payload.email, payload.phone, db)
+    return create_owner(payload.name, payload.email, payload.phone, payload.password, db)
 
 
 @router.delete("/owners/{owner_id}")

@@ -34,4 +34,5 @@ class OwnerStatusUpdateRequest(BaseModel):
 class OwnerCreateRequest(BaseModel):
     name: str
     email: str
+    password: str
     phone: str | None = None

@@ -26,9 +26,6 @@
 
   <div class="actions">
     @if (!isLoggedIn()) {
-      <button class="role-pill tenant" (click)="quickDevLogin('TENANT')" title="Dev login as Tenant">Tenant</button>
-      <button class="role-pill owner"  (click)="quickDevLogin('OWNER')"  title="Dev login as Owner">Owner</button>
-      <button class="role-pill admin"  (click)="quickDevLogin('ADMIN')"  title="Dev login as Admin">Admin</button>
       <a mat-button style="color:rgba(255,255,255,.8)!important;" routerLink="/auth/register">Register</a>
       <a mat-flat-button style="background:linear-gradient(135deg,#6366f1,#a855f7)!important;color:#fff!important;border-radius:10px!important;" routerLink="/auth/login">Login</a>
     }

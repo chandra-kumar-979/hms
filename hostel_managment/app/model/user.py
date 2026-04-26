@@ -18,5 +18,6 @@ class User(Base):
     google_id = Column(String)
     phone = Column(String)
     profile_image = Column(String)
+    password_hash = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

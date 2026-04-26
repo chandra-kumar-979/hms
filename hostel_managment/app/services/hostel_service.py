@@ -41,10 +41,37 @@ def list_hostels(db: Session, location: str | None = None, min_price: float | No
     return query.all()
 
 def get_hostel_details(hostel_id: int, db: Session):
+    from app.model.user import User
     hostel = db.query(Hostel).filter(Hostel.id == hostel_id).first()
     if not hostel:
         raise HTTPException(status_code=404, detail="Hostel not found")
-    return hostel
+    owner = db.query(User).filter(User.id == hostel.owner_id).first()
+    floors = db.query(Floor).filter(Floor.hostel_id == hostel_id).all()
+    total_beds = 0
+    available_beds = 0
+    for floor in floors:
+        rooms = db.query(Room).filter(Room.floor_id == floor.id).all()
+        for room in rooms:
+            beds = db.query(Bed).filter(Bed.room_id == room.id).all()
+            total_beds += len(beds)
+            available_beds += sum(1 for b in beds if b.status == "AVAILABLE")
+    return {
+        "id": hostel.id,
+        "name": hostel.name,
+        "description": hostel.description,
+        "location": hostel.location,
+        "price_per_bed": hostel.price_per_bed,
+        "rating": hostel.rating,
+        "amenities": hostel.amenities,
+        "images": hostel.images,
+        "total_beds": total_beds,
+        "available_beds": available_beds,
+        "owner": {
+            "name": owner.name if owner else "Unknown",
+            "email": owner.email if owner else "",
+            "phone": owner.phone if owner else "",
+        } if owner else None
+    }
 
 def add_feedback(payload, user, db: Session):
     if user.role != UserRole.TENANT:

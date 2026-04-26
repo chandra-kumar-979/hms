@@ -113,6 +113,9 @@
         </div>
         <!-- Card footer -->
         <div class="hcard-footer">
+          <a mat-stroked-button [routerLink]="['/hostels', h.id]">
+            <mat-icon>info</mat-icon> View Details
+          </a>
           <a mat-flat-button class="view-btn"
             [routerLink]="['/tenant/book-room']"
             [queryParams]="{

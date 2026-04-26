@@ -1,8 +1,8 @@
 <div class="register-wrap">
   <mat-card class="register-card">
     <mat-card-header>
-      <mat-card-title>Create Account</mat-card-title>
-      <mat-card-subtitle>Join Hostel Management System</mat-card-subtitle>
+      <mat-card-title>Create Tenant Account</mat-card-title>
+      <mat-card-subtitle>Find and book your perfect stay</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
       <mat-form-field appearance="outline" class="full-width">
@@ -18,20 +18,26 @@
         <input matInput [(ngModel)]="phone" placeholder="+91 XXXXX XXXXX" />
       </mat-form-field>
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Register as</mat-label>
-        <mat-select [(ngModel)]="role">
-          <mat-option value="TENANT">Tenant — looking for a hostel</mat-option>
-          <mat-option value="OWNER">Owner — I manage a hostel</mat-option>
-          <mat-option value="ADMIN">Admin — platform administrator</mat-option>
-        </mat-select>
+        <mat-label>Password</mat-label>
+        <input matInput [(ngModel)]="password" [type]="showPassword ? 'text' : 'password'" placeholder="Min 6 characters" required />
+        <button mat-icon-button matSuffix (click)="showPassword = !showPassword" type="button">
+          <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput [(ngModel)]="confirmPassword" [type]="showPassword ? 'text' : 'password'" placeholder="Repeat password" required />
       </mat-form-field>
       @if (error()) {
         <p class="error-msg">{{ error() }}</p>
       }
+      <p style="font-size:13px;color:#666;margin-top:8px;">
+        Want to list a hostel? Contact admin to get an Owner account.
+      </p>
     </mat-card-content>
     <mat-card-actions align="end">
-      <a mat-button routerLink="/login">Already have an account?</a>
-      <button mat-flat-button color="primary" (click)="submit()" [disabled]="!name || !email">
+      <a mat-button routerLink="/auth/login">Already have an account?</a>
+      <button mat-flat-button color="primary" (click)="submit()" [disabled]="!name || !email || !password">
         Create Account
       </button>
     </mat-card-actions>

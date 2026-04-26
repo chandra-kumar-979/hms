@@ -13,12 +13,11 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Login as</mat-label>
-        <mat-select [(ngModel)]="role">
-          <mat-option value="TENANT">Tenant</mat-option>
-          <mat-option value="OWNER">Owner</mat-option>
-          <mat-option value="ADMIN">Admin</mat-option>
-        </mat-select>
+        <mat-label>Password</mat-label>
+        <input matInput [(ngModel)]="password" [type]="showPassword ? 'text' : 'password'" placeholder="Your password" />
+        <button mat-icon-button matSuffix (click)="showPassword = !showPassword" type="button">
+          <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
       </mat-form-field>
 
       @if (error()) {
@@ -30,8 +29,8 @@
     </mat-card-content>
 
     <mat-card-actions align="end">
-      <a mat-button routerLink="/register">New user? Register</a>
-      <button mat-flat-button color="primary" [disabled]="loading() || !email" (click)="login()">
+      <a mat-button routerLink="/auth/register">New here? Register</a>
+      <button mat-flat-button color="primary" [disabled]="loading() || !email || !password" (click)="login()">
         @if (loading()) { <mat-spinner diameter="18"></mat-spinner> }
         <span>{{ loading() ? 'Signing in...' : 'Login' }}</span>
       </button>

@@ -20,6 +20,7 @@ export class AdminOwnerManagementComponent {
   name = '';
   email = '';
   phone = '';
+  password = '';
   message = signal('');
   loading = signal(false);
   addBusy = signal(false);
@@ -45,19 +46,20 @@ export class AdminOwnerManagementComponent {
 
   addOwner() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.name.trim() || !emailRegex.test(this.email.trim()) || this.addBusy()) {
-      this.snackBar.open('Enter valid owner name and email', 'Close', { duration: 2500 });
+    if (!this.name.trim() || !emailRegex.test(this.email.trim()) || !this.password || this.addBusy()) {
+      this.snackBar.open('Enter valid name, email and password', 'Close', { duration: 2500 });
       return;
     }
     this.addBusy.set(true);
-    this.http.post(`${environment.apiUrl}/admin/owners`, { name: this.name, email: this.email, phone: this.phone }).subscribe({
+    this.http.post(`${environment.apiUrl}/admin/owners`, { name: this.name, email: this.email, phone: this.phone, password: this.password }).subscribe({
       next: () => {
         this.addBusy.set(false);
         this.message.set('Owner added');
-        this.snackBar.open('Owner added', 'Close', { duration: 2000 });
+        this.snackBar.open('Owner added successfully', 'Close', { duration: 2000 });
         this.name = '';
         this.email = '';
         this.phone = '';
+        this.password = '';
         this.reload();
       },
       error: (e) => {

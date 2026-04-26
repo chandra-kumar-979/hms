@@ -17,8 +17,14 @@ interface AuthResponse {
 interface RegisterRequest {
   name: string;
   email: string;
+  password: string;
   phone?: string;
   role: UserRole;
+}
+
+interface LoginRequest {
+  email: string;
+  password: string;
 }
 
 interface DevLoginRequest {
@@ -74,6 +80,10 @@ export class AuthService {
 
   register(payload: RegisterRequest) {
     return this.http.post<AuthResponse>(`${this.API}/register`, payload).pipe(tap((res) => this.applyAuth(res)));
+  }
+
+  loginWithPassword(payload: LoginRequest) {
+    return this.http.post<AuthResponse>(`${this.API}/login`, payload).pipe(tap((res) => this.applyAuth(res)));
   }
 
   logout() {

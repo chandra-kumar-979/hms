@@ -17,11 +17,12 @@ def set_owner_status(owner_id: int, is_active: bool, db: Session):
     return owner
 
 
-def create_owner(name: str, email: str, phone: str | None, db: Session):
+def create_owner(name: str, email: str, phone: str | None, password: str, db: Session):
+    from app.services.auth_service import hash_password
     existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Owner with this email already exists")
-    owner = User(name=name, email=email, phone=phone, role=UserRole.OWNER, google_id=f"owner-{email}")
+    owner = User(name=name, email=email, phone=phone, role=UserRole.OWNER, password_hash=hash_password(password))
     db.add(owner)
     db.commit()
     db.refresh(owner)

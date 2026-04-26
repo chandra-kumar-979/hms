@@ -8,23 +8,18 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatDividerModule } from '@angular/material/divider';
-import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    FormsModule, RouterLink,
-    MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule,
-    MatIconModule, MatProgressSpinnerModule, MatDividerModule, MatSelectModule
-  ],
+  imports: [FormsModule, RouterLink, MatCardModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './login.html',
   styleUrls: ['./login.scss']
 })
 export class LoginComponent {
   email = '';
-  role: 'TENANT' | 'OWNER' | 'ADMIN' = 'TENANT';
+  password = '';
+  showPassword = false;
   error = signal<string | null>(null);
   loading = signal(false);
 
@@ -32,14 +27,14 @@ export class LoginComponent {
 
   login() {
     this.error.set(null);
-    if (!this.email.trim()) {
-      this.error.set('Please enter your email.');
+    if (!this.email.trim() || !this.password) {
+      this.error.set('Please enter your email and password.');
       return;
     }
     this.loading.set(true);
-    this.auth.devLogin({ email: this.email.trim(), role: this.role }).subscribe({
+    this.auth.loginWithPassword({ email: this.email.trim(), password: this.password }).subscribe({
       next: () => { this.loading.set(false); this.router.navigate(['/']); },
-      error: (err) => { this.loading.set(false); this.error.set(err?.error?.detail ?? 'Login failed'); }
+      error: (err) => { this.loading.set(false); this.error.set(err?.error?.detail ?? 'Login failed. Check your email and password.'); }
     });
   }
 }

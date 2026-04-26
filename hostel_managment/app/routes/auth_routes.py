@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
-from app.schemas.user_schema import GoogleAuthRequest, DevLoginRequest, RegisterRequest, UserResponse
-from app.services.auth_service import google_login_service, dev_login_service, register_user_service
+from app.schemas.user_schema import GoogleAuthRequest, DevLoginRequest, RegisterRequest, LoginRequest, UserResponse
+from app.services.auth_service import google_login_service, dev_login_service, register_user_service, login_user_service
 
 router = APIRouter()
 
@@ -21,4 +21,9 @@ def dev_login(payload: DevLoginRequest, db: Session = Depends(get_db)):
 
 @router.post("/register", response_model=UserResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
-    return register_user_service(payload.name, payload.email, payload.phone, payload.role, db)
+    return register_user_service(payload.name, payload.email, payload.password, payload.phone, payload.role, db)
+
+
+@router.post("/login", response_model=UserResponse)
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
+    return login_user_service(payload.email, payload.password, db)

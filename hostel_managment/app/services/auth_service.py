@@ -7,6 +7,15 @@ from app.model.user import User, UserRole
 from app.database import get_db
 import jwt
 from app.config import settings
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain: str, hashed: str) -> bool:
+    return pwd_context.verify(plain, hashed)
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
@@ -78,18 +87,33 @@ def dev_login_service(email: str, role: str, name: str | None, db: Session):
     }
 
 
-def register_user_service(name: str, email: str, phone: str | None, role: str, db: Session):
+def register_user_service(name: str, email: str, password: str, phone: str | None, role: str, db: Session):
     existing = db.query(User).filter(User.email == email).first()
     if existing:
-        raise HTTPException(status_code=400, detail="User already exists")
-    try:
-        user_role = UserRole(role.upper())
-    except ValueError:
-        raise HTTPException(status_code=400, detail="Invalid role")
-    user = User(name=name, email=email, phone=phone, role=user_role, google_id=f"register-{email}")
+        raise HTTPException(status_code=400, detail="Email already registered")
+    # Public registration is TENANT only; OWNER/ADMIN must be created by admin
+    allowed_public_roles = {"TENANT"}
+    role_upper = role.upper()
+    if role_upper not in allowed_public_roles:
+        raise HTTPException(status_code=403, detail="Only TENANT accounts can be self-registered. Contact admin for Owner access.")
+    user = User(name=name, email=email, phone=phone, role=UserRole.TENANT, password_hash=hash_password(password))
     db.add(user)
     db.commit()
     db.refresh(user)
+    token = create_access_token({"id": user.id, "role": user.role.value})
+    return {"id": user.id, "name": user.name, "email": user.email, "role": user.role.value, "token": token}
+
+
+def login_user_service(email: str, password: str, db: Session):
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    if not user.password_hash:
+        raise HTTPException(status_code=401, detail="This account was not registered with a password. Contact admin.")
+    if not verify_password(password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="Account is deactivated. Contact admin.")
     token = create_access_token({"id": user.id, "role": user.role.value})
     return {"id": user.id, "name": user.name, "email": user.email, "role": user.role.value, "token": token}
 

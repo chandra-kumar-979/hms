@@ -12,3 +12,4 @@ google-auth-oauthlib
 pytest
 fpdf2
 psycopg2-binary
+passlib[bcrypt]

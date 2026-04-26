@@ -5,6 +5,7 @@ import { roleGuard } from './role-guard';
 
 export const routes: Routes = [
   { path: '', component: HostelListComponent },
+  { path: 'hostels/:id', loadComponent: () => import('./hostel-detail/hostel-detail').then(m => m.HostelDetailComponent) },
   { path: 'auth/login', loadComponent: () => import('./login/login').then(m => m.LoginComponent) },
   { path: 'auth/register', loadComponent: () => import('./register/register').then(m => m.RegisterComponent) },
   { path: 'profile', loadComponent: () => import('./profile/profile').then(m => m.ProfileComponent) },

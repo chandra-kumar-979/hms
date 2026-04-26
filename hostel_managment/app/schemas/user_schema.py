@@ -29,8 +29,14 @@ class UserProfileResponse(BaseModel):
 class RegisterRequest(BaseModel):
     name: str
     email: str
+    password: str
     phone: str | None = None
     role: str = "TENANT"
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
 
 
 class UpdateProfileRequest(BaseModel):
