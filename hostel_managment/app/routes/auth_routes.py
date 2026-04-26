@@ -37,6 +37,24 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     return login_user_service(payload.email, payload.password, db)
 
 
+@router.post("/setup-admin", response_model=UserResponse)
+def setup_admin(payload: RegisterRequest, db: Session = Depends(get_db)):
+    """One-time endpoint to create the first admin. Disabled once any admin exists."""
+    from app.model.user import User, UserRole
+    existing_admin = db.query(User).filter(User.role == UserRole.ADMIN).first()
+    if existing_admin:
+        raise HTTPException(status_code=403, detail="Admin already exists. Use the login page.")
+    from app.services.auth_service import hash_password
+    user = User(name=payload.name, email=payload.email, phone=payload.phone,
+                role=UserRole.ADMIN, password_hash=hash_password(payload.password))
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    from app.utils.jwt_handler import create_access_token
+    token = create_access_token({"id": user.id, "role": user.role.value})
+    return {"id": user.id, "name": user.name, "email": user.email, "role": user.role.value, "token": token}
+
+
 @router.post("/forgot-password")
 def forgot_password(payload: ForgotPasswordRequest, db: Session = Depends(get_db)):
     return forgot_password_service(payload.email, db)
