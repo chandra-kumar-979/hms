@@ -38,7 +38,7 @@ export class RegisterComponent {
   name = '';
   email = '';
   phone = '';
-  role = 'TENANT';
+  role: 'TENANT' | 'OWNER' | 'ADMIN' = 'TENANT';
   error = signal<string | null>(null);
 
   constructor(private auth: AuthService, private router: Router) {}
